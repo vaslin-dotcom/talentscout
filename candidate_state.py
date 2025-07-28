@@ -3,8 +3,6 @@ required_fields = [
     "desired_position", "location", "tech_stack"
 ]
 
-def init_candidate_info():
-    info = {field: None for field in required_fields}
-    info["responses"] = []
-    info["proficiency_summary"] = None
-    return info
+candidate_info = {field: None for field in required_fields}
+candidate_info["responses"] = []
+candidate_info["proficiency_summary"] = None
