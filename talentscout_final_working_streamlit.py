@@ -3,7 +3,7 @@ import streamlit as st
 from groq import Groq
 
 # Replace this with your actual Groq API key
-groq_api_key = "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"
+groq_api_key = "*******************************************"
 client = Groq(api_key=groq_api_key)
 
 def ask_groq(messages):
