@@ -14,4 +14,4 @@ def generate_proficiency_summary(user_answers):
     ]
 
     summary = ask_groq(summary_prompt)
-    return summary.strip()
+    return summary
