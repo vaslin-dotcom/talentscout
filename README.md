@@ -81,7 +81,7 @@ Maintaining chat context across Streamlit reruns	Used st.session_state effective
 Splitting bot replies into compliment/question wasn't robust	Simplified logic by printing full response directly
 Avoiding repetition and managing user phases	Used phase and question_index in session state
 
-**_Deployment_ **
+**_Deployment_**
 
 This code is being deployed in aws EC2 and whenever somone tries to fill the data, their details will be stired in aws
 
