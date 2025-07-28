@@ -1,111 +1,92 @@
-import streamlit as st
 import json
-
-from chatbot import ask_groq
-from extract import extract_candidate_fields, update_candidate_info
-from prompts import system_intro_prompt, technical_round_prompt
-from candidate_state import init_candidate_info, required_fields
-from utils import split_question_response, safe_filename
+from chatbot import ask_groq, split_question_response
+from extract import extract_candidate_fields
+from utils import update_candidate_info
+from candidate_state import candidate_info, required_fields
 from summary import generate_proficiency_summary
+import os
 
-# Initialize candidate info
-candidate_info = init_candidate_info()
+def main():
+    chat_history = [
+        {
+            "role": "system",
+            "content": (
+                "You are TalentScout, an AI Hiring Assistant chatbot for a tech recruitment agency. "
+                "Greet candidates, gather their basic details (name, email, phone, years of experience, desired position, location, skills),convince them to provide the only the following details alone (name, email, phone, years of experience, desired position, location, tech stack) untill they provide it"
+                "End the conversation when the user says 'exit', 'bye', or 'quit'. Keep the tone professional but friendly."
+            )
+        }
+    ]
 
-# Initialize chat history
-chat_history = [system_intro_prompt()]
+    print("🧠 TalentScout AI Hiring Assistant\n(Type 'exit' anytime to end)\n")
 
-# Streamlit UI setup
-st.set_page_config(page_title="TalentScout AI Hiring Assistant", layout="centered")
-st.title("🧠 TalentScout - AI Hiring Assistant")
-st.markdown("Welcome! I’ll collect your details and ask a few technical questions based on your tech stack.")
+    while any(candidate_info[f] is None for f in required_fields):
+        user_input = input("👤 You: ")
 
-# Session state for persistence
-if "step" not in st.session_state:
-    st.session_state.step = "collecting"
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "answers" not in st.session_state:
-    st.session_state.answers = []
-
-# Chat UI function
-def chat_bot_response(user_input):
-    chat_history.append({"role": "user", "content": user_input})
-    bot_reply = ask_groq(chat_history)
-    chat_history.append({"role": "assistant", "content": bot_reply})
-    return bot_reply
-
-# Step 1: Collect Required Fields
-if st.session_state.step == "collecting":
-    missing_fields = [f for f in required_fields if candidate_info[f] is None]
-
-    user_input = st.text_input("👤 You: Enter your details here (you can write naturally)")
-
-    if user_input:
         if user_input.lower() in ["exit", "quit", "bye"]:
-            st.write("👋 Ending conversation...")
-            st.stop()
+            print("👋 Ending...")
+            return
 
-        bot_reply = chat_bot_response(user_input)
-        st.markdown(f"🤖 TalentScout: {bot_reply}")
+        chat_history.append({"role": "user", "content": user_input})
+        bot_reply = ask_groq(chat_history)
+        chat_history.append({"role": "assistant", "content": bot_reply})
+        print("🤖 TalentScout:", bot_reply)
 
         parsed_data = extract_candidate_fields(user_input)
-        update_candidate_info(parsed_data, candidate_info)
+        update_candidate_info(parsed_data)
 
-        remaining = [f for f in required_fields if candidate_info[f] is None]
-        if remaining:
-            st.warning("Please provide the remaining details: " + ", ".join(remaining))
+        missing_fields = [field for field in required_fields if not candidate_info.get(field)]
+        if missing_fields:
+            print("Let's collect the data before moving on.")
+            continue
         else:
-            st.success("✅ Thank you! I have all the details now.")
-            st.session_state.step = "interview"
-            st.rerun()
+            print("✅ Thank you! I have all the details now.\n")
+            print("Let's begin the technical interview...")
+            break
 
-# Step 2: Technical Questions
-elif st.session_state.step == "interview":
     stack = candidate_info["tech_stack"]
-    experience = candidate_info["experience"]
-    level = "fresher" if "0" in experience or "fresh" in experience.lower() else "experienced"
-    chat_history.clear()
-    chat_history.append(technical_round_prompt(stack, level))
+    chat_history = [
+        {"role": "system", "content": (
+            f"You are a friendly and intelligent technical interviewer. Ask 1 question at a time based on the candidate’s tech stack ({stack}). "
+            f"The candidate is a fresher. Ask coding, theory, or real-world application questions. Do not repeat questions. "
+            f"After each question, wait for the answer before asking the next one."
+            f"Respond in this exact format :\n\n"
+            "Compliment: <short one-liner to motivate candidate>\n"
+            "Question: <the actual technical question>"
+        )}
+    ]
 
-    num_questions = 5
+    user_answers = []
 
-    for i in range(num_questions):
-        if len(st.session_state.answers) <= i:
-            user_question_prompt = f"Ask question {i+1} for the interview."
-            chat_history.append({"role": "user", "content": user_question_prompt})
-            response = ask_groq(chat_history)
+    for i in range(5):
+        chat_history.append({"role": "user", "content": f"Ask question {i+1} for the interview."})
+        response = ask_groq(chat_history).strip()
+        compliment, question = split_question_response(response)
 
-            compliment, question = split_question_response(response)
-            st.markdown(f"💬 {compliment}")
-            st.markdown(f"❓ **Question {i+1}:** {question}")
+        if compliment:
+            print(f"💬 {compliment}")
+            print(f"❓ Question {i+1}: {question}")
+        else:
+            print(f"❓ Question {i+1}: {response}")
+            question = response
 
-            answer = st.text_input(f"👤 Your Answer {i+1}:", key=f"answer_{i}")
-            if answer:
-                st.session_state.answers.append({"question": question, "answer": answer})
-                chat_history.append({"role": "assistant", "content": question})
-                chat_history.append({"role": "user", "content": answer})
-                st.rerun()
-            else:
-                st.stop()
+        answer = input("👤 Your Answer: ").strip()
+        user_answers.append({"question": question, "answer": answer})
+        chat_history.append({"role": "assistant", "content": question})
+        chat_history.append({"role": "user", "content": answer})
 
-    # Step 3: Wrap up
-    st.session_state.step = "summary"
-    st.rerun()
+    candidate_info["responses"] = user_answers
+    print("🤝 Thank you for your time! It was great learning more about you.")
 
-# Step 3: Summary + Save
-elif st.session_state.step == "summary":
-    st.markdown("🤝 Thank you for completing the technical round!")
-    candidate_info["responses"] = st.session_state.answers
-    summary = generate_proficiency_summary(st.session_state.answers)
+    summary = generate_proficiency_summary(user_answers)
     candidate_info["proficiency_summary"] = summary
 
-    st.markdown("### 📋 Proficiency Summary")
-    st.markdown(summary)
-
-    filename = f"profiles/{safe_filename(candidate_info['name'])}_profile.json"
+    os.makedirs("profiles", exist_ok=True)
+    filename = f"profiles/{candidate_info['name'].replace(' ', '_')}_profile.json"
     with open(filename, "w") as f:
         json.dump(candidate_info, f, indent=4)
 
-    st.success(f"✅ Candidate data saved to `{filename}`")
-    st.balloons()
-    st.markdown("Thank you! We'll be in touch. 👋")
+    print(f"\n✅ Candidate data saved to {filename}")
+
+if __name__ == "__main__":
+    main()
