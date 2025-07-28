@@ -2,11 +2,15 @@ import json
 import streamlit as st
 from groq import Groq
 
-# Replace this with your actual Groq API key
-groq_api_key = "*******************************************"
+# ============================
+# 🔑 Initialization
+# ============================
+# Initialize Groq client with your API key
+groq_api_key = "**************************************"
 client = Groq(api_key=groq_api_key)
 
 def ask_groq(messages):
+    """Send a list of messages to Groq API and return the model's response."""
     response = client.chat.completions.create(
         model="llama3-8b-8192",
         messages=messages,
@@ -14,12 +18,16 @@ def ask_groq(messages):
     )
     return response.choices[0].message.content.strip()
 
+# ============================
+# 🧾 Candidate Info Setup
+# ============================
+# List of fields required from candidate
 required_fields = [
     "name", "email", "phone", "experience",
     "desired_position", "location", "tech_stack"
 ]
 
-# Initialize session state
+# Initialize session state variables
 if "candidate_info" not in st.session_state:
     st.session_state.candidate_info = {field: None for field in required_fields}
     st.session_state.candidate_info["responses"] = []
@@ -37,14 +45,18 @@ if "chat_history" not in st.session_state:
     ]
 
 if "phase" not in st.session_state:
-    st.session_state.phase = "collect"
+    st.session_state.phase = "collect"  # Phase 1: Collect basic info
     st.session_state.user_answers = []
     st.session_state.finished = False
 
 if "question_index" not in st.session_state:
     st.session_state.question_index = 0
 
+# ============================
+# 🔍 Info Extraction Functions
+# ============================
 def extract_candidate_fields(user_input):
+    """Extract candidate details from user input using LLM prompt."""
     prompt = [
         {"role": "system", "content": (
             "You are a JSON parser. Extract the following keys from user text: "
@@ -61,17 +73,25 @@ def extract_candidate_fields(user_input):
         return {}
 
 def update_candidate_info(parsed_data):
+    """Update candidate info with parsed values from user input."""
     for key in st.session_state.candidate_info:
         if key in parsed_data and st.session_state.candidate_info[key] is None:
             st.session_state.candidate_info[key] = parsed_data[key]
 
-st.title("I am TalentScout AI Hiring Assistant.\nI am here to collect your data and evaluate ur proficiency in yor tech stack")
+# ============================
+# 💬 Streamlit Chat UI
+# ============================
+st.title("🧠 TalentScout AI Hiring Assistant")
+st.subheader("I am here to collect your data and evaluate your proficiency in your tech stack")
 
-# Display chat history
+# Show previous chat messages
 for msg in st.session_state.chat_history[1:]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
+# ============================
+# 🔁 Chat Interaction Loop
+# ============================
 if not st.session_state.finished:
     user_input = st.chat_input("👤 You: ")
     if user_input:
@@ -80,7 +100,11 @@ if not st.session_state.finished:
         if user_input.lower() in ["exit", "quit", "bye"]:
             st.session_state.finished = True
             st.chat_message("assistant").markdown("👋 Ending... Thank you!")
+
         else:
+            # ============================
+            # 🧩 Phase 1: Collect Candidate Info
+            # ============================
             if st.session_state.phase == "collect":
                 st.session_state.chat_history.append({"role": "user", "content": user_input})
                 bot_reply = ask_groq(st.session_state.chat_history)
@@ -91,7 +115,7 @@ if not st.session_state.finished:
                 update_candidate_info(parsed_data)
 
                 if all(st.session_state.candidate_info[f] for f in required_fields):
-                    st.session_state.phase = "interview"
+                    st.session_state.phase = "interview"  # Move to Phase 2
                     st.session_state.chat_history = [
                         {"role": "system", "content": (
                             f"You are a friendly and intelligent technical interviewer. Ask 1 question at a time based on the candidate’s tech stack ({st.session_state.candidate_info['tech_stack']}). "
@@ -101,6 +125,9 @@ if not st.session_state.finished:
                     ]
                     st.chat_message("assistant").markdown("✅ Thank you! I have all the details now.\n\nLet's begin the technical interview...")
 
+            # ============================
+            # 🧠 Phase 2: Interview
+            # ============================
             elif st.session_state.phase == "interview":
                 if len(st.session_state.user_answers) < st.session_state.question_index:
                     st.session_state.user_answers.append(user_input)
@@ -111,13 +138,16 @@ if not st.session_state.finished:
                     st.session_state.chat_history.append({"role": "user", "content": f"Ask question {i+1} for the interview."})
                     response = ask_groq(st.session_state.chat_history)
 
-                    st.chat_message("assistant").markdown(f" {response}")
+                    st.chat_message("assistant").markdown(f"❓ Question {i+1}: {response}")
                     st.session_state.chat_history.append({"role": "assistant", "content": response})
 
                     st.session_state.question_index += 1
                 else:
-                    st.session_state.phase = "summary"
+                    st.session_state.phase = "summary"  # Move to Phase 3
 
+            # ============================
+            # 📊 Phase 3: Summarization and Save
+            # ============================
             elif st.session_state.phase == "summary":
                 user_answers = []
                 for i in range(5):
