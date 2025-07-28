@@ -1,7 +1,7 @@
 **TalentScout AI Hiring Assistant**
 
 
-_Project Overview_
+**_Project Overview_**
 
 TalentScout AI Hiring Assistant is an interactive chatbot built with Streamlit and powered by LLMs via Groq API. It simulates an intelligent recruiter that:
 Gathers essential candidate information (name, email, phone, etc.)
@@ -11,7 +11,8 @@ Saves the collected information and responses securely in a .json file
 This tool helps automate the preliminary screening process in tech recruitment.
 
 
-_Installation Instructions_
+
+**_Installation Instructions_**
 
 1.Clone the Repository
 
@@ -36,7 +37,7 @@ groq_api_key = "your_actual_groq_api_key"
     streamlit run app.py
 
 
-_Usage Guide_
+**_Usage Guide_**
 
 The chatbot opens with a greeting and asks you for key details like your name, email, tech stack, etc.
 Once all required information is collected, it begins a technical interview with 5 questions tailored to your tech stack.
@@ -45,7 +46,7 @@ The system generates a brief summary of your proficiency (not shown to you) and 
 
 
 
-_Technical Details_
+**_Technical Details_**
 
 Frontend: Streamlit
 Backend Model: llama3-8b-8192 via Groq API
@@ -54,7 +55,7 @@ File Storage: Responses saved locally in JSON format
 State Management: Streamlit’s st.session_state
 
 
-_Prompt Design_
+**_Prompt Design_**
 
 For Candidate Info Extraction:
 
@@ -72,7 +73,7 @@ These prompts ensure controlled, context-aware behavior from the model.
 
 
 
-_Challenges & Solutions_
+**_Challenges & Solutions_**
 
 Challenge	Solution
 LLM sometimes returned malformed JSON	Designed a prompt to strictly return JSON only
@@ -82,7 +83,7 @@ Avoiding repetition and managing user phases	Used phase and question_index in se
 
 
 
-_requirements.txt_
+**_requirements.txt_**
 
 streamlit
 groq
