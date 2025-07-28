@@ -1,6 +1,7 @@
 **TalentScout AI Hiring Assistant**
 
 _Project Overview_
+
 TalentScout AI Hiring Assistant is an interactive chatbot built with Streamlit and powered by LLMs via Groq API. It simulates an intelligent recruiter that:
 Gathers essential candidate information (name, email, phone, etc.)
 Asks tailored technical questions based on the candidate’s tech stack
