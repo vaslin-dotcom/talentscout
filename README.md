@@ -34,12 +34,14 @@ groq_api_key = "your_actual_groq_api_key"
     streamlit run app.py
 
 _Usage Guide_
+
 The chatbot opens with a greeting and asks you for key details like your name, email, tech stack, etc.
 Once all required information is collected, it begins a technical interview with 5 questions tailored to your tech stack.
 Your responses are recorded.
 The system generates a brief summary of your proficiency (not shown to you) and saves all your data in a .json file.
 
 _Technical Details_
+
 Frontend: Streamlit
 Backend Model: llama3-8b-8192 via Groq API
 Language: Python 3
@@ -47,6 +49,7 @@ File Storage: Responses saved locally in JSON format
 State Management: Streamlit’s st.session_state
 
 _Prompt Design_
+
 For Candidate Info Extraction:
 
 You are a JSON parser. Extract the following keys from user text: name, email, phone, experience, desired_position, location, tech_stack...
@@ -62,6 +65,7 @@ You are a hiring expert. Write a short summary (3–5 lines) about the candidate
 These prompts ensure controlled, context-aware behavior from the model.
 
 _Challenges & Solutions_
+
 Challenge	Solution
 LLM sometimes returned malformed JSON	Designed a prompt to strictly return JSON only
 Maintaining chat context across Streamlit reruns	Used st.session_state effectively
