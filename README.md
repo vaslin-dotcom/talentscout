@@ -15,7 +15,7 @@ This tool helps automate the preliminary screening process in tech recruitment.
 🚀 Installation Instructions
 1. Clone the Repository
 
-git clone https://github.com/vaslin-dotcom
+git clone https://github.com/vaslin-dotcom\n
 cd talentscout
 
 2. Set up a virtual environment (optional but recommended)
