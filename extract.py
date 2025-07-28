@@ -11,15 +11,9 @@ def extract_candidate_fields(user_input):
         {"role": "user", "content": user_input}
     ]
     response = ask_groq(prompt)
-
     try:
         data = json.loads(response)
         return data
     except json.JSONDecodeError:
         print("Sorry for inconvenience please enter the details again")
         return {}
-
-def update_candidate_info(parsed_data, candidate_info):
-    for key in candidate_info:
-        if key in parsed_data and candidate_info[key] is None:
-            candidate_info[key] = parsed_data[key]
