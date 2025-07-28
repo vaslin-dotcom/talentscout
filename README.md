@@ -1,91 +1,83 @@
-**TalentScout AI Hiring Assistant**
+#  TalentScout – AI Hiring Assistant
 
+TalentScout is an intelligent AI-powered chatbot designed to automate the initial screening process in tech hiring. Built with Streamlit and powered by Groq’s LLaMA 3 LLM, the assistant gathers candidate information, asks technical questions based on their declared tech stack, and generates a professional summary — all through an interactive chat interface.
 
-**_Project Overview_**
+> Hosted and run on an AWS EC2 instance. All candidate data is securely stored in structured JSON format for future review.
 
-TalentScout AI Hiring Assistant is an interactive chatbot built with Streamlit and powered by LLMs via Groq API. It simulates an intelligent recruiter that:
-Gathers essential candidate information (name, email, phone, etc.)
-Asks tailored technical questions based on the candidate’s tech stack
-Generates a summary of the candidate’s proficiency
-Saves the collected information and responses securely in a .json file
-This tool helps automate the preliminary screening process in tech recruitment.
+---
 
+##  Features
 
+- ✅ Interactive chatbot UI using **Streamlit**
+- ✅ Dynamic question generation using **Groq’s LLaMA 3 model**
+- ✅ Intelligent parsing of candidate details using **prompt-driven extraction**
+- ✅ Adaptive questioning based on declared **tech stack**
+- ✅ Summary generation of candidate proficiency for recruiter use
+- ✅ Local **JSON-based data storage** of candidate responses
+- ✅ Hosted via **AWS EC2** (terminal-based access)
 
-**_Installation Instructions_**
+---
 
-1.Clone the Repository
+##  Tech Stack
 
-    git clone https://github.com/vaslin-dotcom\n
-    cd talentscout
+| Layer           | Tech Used                     |
+|----------------|-------------------------------|
+| Frontend       | Streamlit                     |
+| LLM Backend    | Groq API (LLaMA3-8B-8192)     |
+| Language       | Python 3                      |
+| Hosting        | AWS EC2 (Ubuntu 22.04)        |
+| Data Storage   | Local JSON Files              |
 
-2. Set up a virtual environment (optional but recommended)
+---
 
-     python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+## How It Works
 
-3. Install Dependencies
+### Phase 1: Information Gathering
 
-      pip install -r requirements.txt
+- Candidate is prompted to provide:
+  - Name
+  - Email
+  - Phone
+  - Experience
+  - Desired Position
+  - Location
+  - Tech Stack (e.g., Python, Django, React)
 
-4. Add Groq API Key
-    In the Python file, replace the placeholder with your actual Groq key:
-groq_api_key = "your_actual_groq_api_key"
+###  Phase 2: Technical Interview
 
-5. Run the App
+- Based on the tech stack, the bot asks **5 unique technical questions**
+- Each answer is saved and added to the candidate’s record
 
-    streamlit run app.py
+###  Phase 3: Summary Generation
 
+- The candidate’s answers are fed back into the LLM
+- A concise summary is generated and stored with the record
 
-**_Usage Guide_**
+### Final Step: Save JSON
 
-The chatbot opens with a greeting and asks you for key details like your name, email, tech stack, etc.
-Once all required information is collected, it begins a technical interview with 5 questions tailored to your tech stack.
-Your responses are recorded.
-The system generates a brief summary of your proficiency (not shown to you) and saves all your data in a .json file.
+- All information is stored locally as `<candidate_name>_profile.json`
 
+---
 
+##  Deployment Instructions
 
-**_Technical Details_**
+###  Prerequisites
 
-Frontend: Streamlit
-Backend Model: llama3-8b-8192 via Groq API
-Language: Python 3
-File Storage: Responses saved locally in JSON format
-State Management: Streamlit’s st.session_state
+- Python 3.9+
+- Streamlit
+- Groq API key (you can get it from https://console.groq.com)
+- AWS EC2 instance (Ubuntu recommended)
 
+###  Installation
 
-**_Prompt Design_**
+```bash
+# Clone the repo
+git clone https://github.com/vaslin-dotcom/talentscout.git
+cd talentscout
 
-For Candidate Info Extraction:
+# Set up Python environment (optional but recommended)
+python3 -m venv venv
+source venv/bin/activate
 
-You are a JSON parser. Extract the following keys from user text: name, email, phone, experience, desired_position, location, tech_stack...
-
-For Technical Questions:
-
-You are a friendly and intelligent technical interviewer. Ask 1 question at a time based on the candidate’s tech stack...
-
-For Summary Generation:
-
-You are a hiring expert. Write a short summary (3–5 lines) about the candidate's technical proficiency...
-
-These prompts ensure controlled, context-aware behavior from the model.
-
-
-
-**_Challenges & Solutions_**
-
-Challenge	Solution
-LLM sometimes returned malformed JSON	Designed a prompt to strictly return JSON only
-Maintaining chat context across Streamlit reruns	Used st.session_state effectively
-Splitting bot replies into compliment/question wasn't robust	Simplified logic by printing full response directly
-Avoiding repetition and managing user phases	Used phase and question_index in session state
-
-**_Deployment_**
-
-This code is being deployed in aws EC2 and whenever somone tries to fill the data, their details will be stired in aws
-
-**_requirements.txt_**
-
-streamlit
-groq
+# Install dependencies
+pip install -r requirements.txt
